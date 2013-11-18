@@ -15,12 +15,12 @@ def SaveOut(frame,subj,run,condition,pth='/home/jagust/DST/FSL/functional'):
 	np.savetxt(outfile,outframe,delimiter='\t',fmt='%.3f %.1f %i')
 	print 'Saved %s'%outfile
 
-def SaveDetails(runframe,subj,run,acc,gistacc):
+def SaveDetails(runframe,subj,run,acc,gistacc,detail_bins):
 	#Loop over all detail conditions and save out stim schedules to functional folders.
-	for det in [[1,0],[2],[3],[4],[5,6]]:
+	for det in detail_bins.keys():
 		detframe = runframe[(runframe['GistSlide.ACC']==gistacc) & 
-							runframe['DetailSlide.ACC'].isin(det)]        		
-		condition = acc + '_' + str(det[0]) 
+							runframe['DetailSlide.ACC'].isin(detail_bins[det])]        		
+		condition = acc + '_' + str(det) 
 		SaveOut(detframe,subj,run,condition)
     		
     	#Create array and save stim schedules for Gist correct, high confidence.
@@ -43,6 +43,7 @@ if __name__ == '__main__':
 	behavdatapath = '/home/jagust/DST/BehavioralData'
 	funcdatapath = '/home/jagust/DST/FSL/functional'
 	onset_cols = ['Onset','Duration','Weight']
+	detail_bins = {'Low':[0,1,2],'Med':[3],'High':[4,5,6]}
     ####################################################
 
 	for subj in args:
@@ -59,5 +60,5 @@ if __name__ == '__main__':
 				    gistacc=1
 				elif 'Incorrect' in acc:
 				    gistacc=0    
-				SaveDetails(runframe,subj,run,acc,gistacc)
+				SaveDetails(runframe,subj,run,acc,gistacc,detail_bins)
 				SaveGist(runframe,subj,run,acc,gistacc)
