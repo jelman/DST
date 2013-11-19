@@ -23,7 +23,7 @@ def parse_report(fqdir, statnames):
         
 if __name__ == '__main__':
 
-
+    ################################################################################
     if len(sys.argv) == 1:
         print 'USAGE: CreateFeatquery.py <featquery dir name> <subject 1> <subject 2> ...'
     else:
@@ -31,13 +31,16 @@ if __name__ == '__main__':
         sublist = sys.argv[2:]
         
     basedir = '/home/jagust/DST/FSL/functional'
-    outdir = '/home/jagust/DST/FSL/results'
-    stat_names = ['Details1', 'Details2', 'Details3', 'Details4', 'Details5']
+    secondleveldir = os.path.join(basedir, '2ndLevel', 'Detail_Bins')
+    outdir = '/home/jagust/DST/FSL/results/Details_3Bins'
+    stat_names = ['DetailHigh','DetailMedium','DetailLow']
+    reverse_cols = True #Should column order be reversed for plotting?
     # Specify group membership if available, otherwise set to None
     groupinfo = pd.read_csv('/home/jagust/DST/FSL/spreadsheets/Included_Subjects.csv', sep=None, index_col=0)
     groupinfo = groupinfo['Status']
     outname = os.path.join(outdir, fqdirname.strip('featquery_'))
-    
+    #############################################################################
+
     # Create empty dataframes to hold full results
     zmeandf = pd.DataFrame(index=stat_names)
     zmaxdf = pd.DataFrame(index=stat_names)
@@ -46,8 +49,7 @@ if __name__ == '__main__':
     
     for subj in sublist:
         print 'Starting on subject %s'%(subj)
-        globstr = os.path.join(basedir, 
-                                '2ndLevel/Details',
+        globstr = os.path.join(secondleveldir,
                                 subj + '.gfeat',
                                 'cope1.feat',
                                 fqdirname)
@@ -61,27 +63,31 @@ if __name__ == '__main__':
             copemeandf[subj] = copereport['mean']
             copemaxdf[subj] = copereport['max']
 
+    if reverse_cols == True:
+        col_names = list(reverse(stat_names))
+    else:
+        col_names = stat_names
         
     if not zmeandf.empty:
-        zmeandfT = zmeandf.T
+        zmeandfT = pd.DataFrame(zmeandf.T, columns=col_names)
         zmeandfT.insert(0, 'Status', groupinfo)
         zmeandfT.to_csv(outname + '_zmean.csv', sep='\t', index=True, index_label='Subject')
         zmean_grp = zmeandfT.groupby(by='Status')            
      
     if not zmaxdf.empty:            
-        zmaxdfT = zmaxdf.T
+        zmaxdfT = pd.DataFrame(zmaxdf.T, columns=col_names)
         zmaxdfT.insert(0, 'Status', groupinfo)
         zmaxdfT.to_csv(outname + '_zmax.csv', sep='\t', index=True, index_label='Subject')
         zmax_grp = zmaxdfT.groupby(by='Status')
    
     if not copemeandf.empty:
-        copemeandfT = copemeandf.T
+        copemeandfT = pd.DataFrame(copemeandf.T, columns=col_names)
         copemeandfT.insert(0, 'Status', groupinfo)
         copemeandfT.to_csv(outname + '_copemean.csv', sep='\t', index=True, index_label='Subject')
         copemean_grp = copemeandfT.groupby(by='Status')
      
     if not copemaxdf.empty:    
-        copemaxdfT = copemaxdf.T
+        copemaxdfT = pd.DataFrame(copemaxdf.T, columns=col_names)
         copemaxdfT.insert(0, 'Status', groupinfo)
         copemaxdfT.to_csv(outname + '_copemax.csv', sep='\t', index=True, index_label='Subject')
         copemax_grp = copemaxdfT.groupby(by='Status')
