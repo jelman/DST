@@ -11,10 +11,10 @@ def parse_report(fqdir, statnames):
     fqreport_rename = fqreport.set_index('stat')
     zreport = fqreport_rename.ix[['zstat' in x for x in fqreport_rename.index]]
     zreport = zreport.rename(index=
-                                collections.OrderedDict(zip(zreport.index, stat_names)))
+                                collections.OrderedDict(zip(zreport.index, statnames)))
     copereport = fqreport_rename.ix[['cope' in x for x in fqreport_rename.index]]
     copereport = copereport.rename(index=
-                                collections.OrderedDict(zip(copereport.index, stat_names)))
+                                collections.OrderedDict(zip(copereport.index, statnames)))
     return zreport, copereport
     
     
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             copemaxdf[subj] = copereport['max']
 
     if reverse_cols == True:
-        col_names = list(reverse(stat_names))
+        col_names = list(reversed(stat_names))
     else:
         col_names = stat_names
         
