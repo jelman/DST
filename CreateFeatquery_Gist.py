@@ -17,6 +17,21 @@ def parse_report(fqdir, statnames):
                                 collections.OrderedDict(zip(copereport.index, statnames)))
     return zreport, copereport
     
+def pandas_bar_subplot(df, ax, title):
+    y = df.mean().values.T[0]
+    N = len(y)
+    ind = range(N)
+    err = df.std().values.T[0]
+    ax.bar(ind, y, facecolor='#777777', width=0.3,
+           align='center', yerr=err, ecolor='black')
+    ax.set_ylabel('Contrast value')
+    ax.set_title(title,fontstyle='italic')
+    ax.set_xticks(ind)
+    group_labels = df.groups.keys()
+    ax.set_xticklabels(group_labels)
+    ax.grid()
+    fig.autofmt_xdate()
+    
     
 
 ##########################################################################
@@ -31,10 +46,10 @@ if __name__ == '__main__':
         sublist = sys.argv[2:]
         
     basedir = '/home/jagust/DST/FSL/functional'
-    secondleveldir = os.path.join(basedir, '2ndLevel', 'Detail_Bins')
-    outdir = '/home/jagust/DST/FSL/results/Details_3Bins'
-    stat_names = ['DetailHigh','DetailMedium','DetailLow']
-    reverse_cols = True #Should column order be reversed for plotting?
+    secondleveldir = os.path.join(basedir, '2ndLevel', 'Gist')
+    outdir = '/home/jagust/DST/FSL/results/Gist'
+    stat_names = ['HiCorr gt Incorr']
+    reverse_cols = False #Should column order be reversed for plotting?
     # Specify group membership if available, otherwise set to None
     groupinfo = pd.read_csv('/home/jagust/DST/FSL/spreadsheets/Included_Subjects.csv', sep=None, index_col=0)
     groupinfo = groupinfo['Status']
@@ -93,12 +108,10 @@ if __name__ == '__main__':
         copemax_grp = copemaxdfT.groupby(by='Status')
 
         
-    fig, axes = plt.subplots(nrows=2, ncols=2)
-    zmean_grp.mean().T.plot(ax=axes[0,0], title='Z mean', marker='o', legend=False)
-    zmax_grp.mean().T.plot(ax=axes[0,1], title='Z max', marker='o', legend=False)
-    copemean_grp.mean().T.plot(ax=axes[1,0], title='Cope Mean', marker='o', legend=False)
-    copemax_grp.mean().T.plot(ax=axes[1,1], title='Cope Max', marker='o')
-    leg = plt.legend(bbox_to_anchor=(0, 0, 1, 1), bbox_transform=plt.gcf().transFigure, fancybox=True)
-    leg.get_frame().set_alpha(0.7)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2)
+    pandas_bar_subplot(zmean_grp, ax1, 'Z mean')
+    pandas_bar_subplot(zmax_grp, ax2, 'Z max')
+    pandas_bar_subplot(copemean_grp, ax3, 'Cope mean')
+    pandas_bar_subplot(copemax_grp, ax4, 'Cope max')
     plt.tight_layout()
     plt.savefig(outname + '.png')
