@@ -25,12 +25,16 @@ def SaveDetails(runframe,subj,run,acc,gistacc,detail_bins):
     		
     	#Create array and save stim schedules for Gist correct, high confidence.
 def SaveGist(runframe,subj,run,acc,gistacc):
-	for conf in ['Hi','Lo']:
-		confframe = runframe[(runframe['GistSlide.ACC']==gistacc) & 
-			(runframe['Confidence']==conf)]
-		condition = acc + '_' + conf
-		SaveOut(confframe,subj,run,condition)  
-
+    if gistacc == 1:
+	    for conf in ['Hi','Lo']:
+		    confframe = runframe[(runframe['GistSlide.ACC']==gistacc) & 
+			    (runframe['Confidence']==conf)]
+		    condition = acc + '_' + conf
+		    SaveOut(confframe,subj,run,condition)  
+    if gistacc == 0:
+        confframe = runframe[runframe['GistSlide.ACC']==gistacc]
+        condition = acc
+        SaveOut(confframe,subj,run,condition)
 
 if __name__ == '__main__':
 
@@ -60,5 +64,5 @@ if __name__ == '__main__':
 				    gistacc=1
 				elif 'Incorrect' in acc:
 				    gistacc=0    
-				SaveDetails(runframe,subj,run,acc,gistacc,detail_bins)
+				#SaveDetails(runframe,subj,run,acc,gistacc,detail_bins)
 				SaveGist(runframe,subj,run,acc,gistacc)
