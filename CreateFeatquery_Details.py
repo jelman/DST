@@ -17,7 +17,6 @@ def parse_report(fqdir, statnames):
                                 collections.OrderedDict(zip(copereport.index, statnames)))
     return zreport, copereport
     
-    
 
 ##########################################################################
         
@@ -31,13 +30,15 @@ if __name__ == '__main__':
         sublist = sys.argv[2:]
         
     basedir = '/home/jagust/DST/FSL/functional'
-    secondleveldir = os.path.join(basedir, '2ndLevel', 'Detail_Bins')
-    outdir = '/home/jagust/DST/FSL/results/Details_3Bins'
-    stat_names = ['DetailHigh','DetailMedium','DetailLow']
-    reverse_cols = True #Should column order be reversed for plotting?
+    secondleveldir = os.path.join(basedir, '2ndLevel', 'Details')
+    outdir = '/home/jagust/DST/FSL/results/Details_5Bins/ClusterROI'
+    stat_names = ['Details1','Details2','Details3','Details4','Details5']
+    reverse_cols = False #Should column order be reversed for plotting?
     # Specify group membership if available, otherwise set to None
     groupinfo = pd.read_csv('/home/jagust/DST/FSL/spreadsheets/Included_Subjects.csv', sep=None, index_col=0)
-    groupinfo = groupinfo['Status']
+    status = groupinfo['Status']
+    agegroup = groupinfo['Group']
+    age = groupinfo['Age']
     outname = os.path.join(outdir, fqdirname.strip('featquery_'))
     #############################################################################
 
@@ -70,26 +71,30 @@ if __name__ == '__main__':
         
     if not zmeandf.empty:
         zmeandfT = pd.DataFrame(zmeandf.T, columns=col_names)
-        zmeandfT.insert(0, 'Status', groupinfo)
-        zmeandfT.to_csv(outname + '_zmean.csv', sep='\t', index=True, index_label='Subject')
+        zmeandfT.join(groupinfo).to_csv(outname + '_zmean.csv', 
+                                        sep='\t', index=True, index_label='Subject')
+        zmeandfT = zmeandfT.join(status)
         zmean_grp = zmeandfT.groupby(by='Status')            
      
     if not zmaxdf.empty:            
         zmaxdfT = pd.DataFrame(zmaxdf.T, columns=col_names)
-        zmaxdfT.insert(0, 'Status', groupinfo)
-        zmaxdfT.to_csv(outname + '_zmax.csv', sep='\t', index=True, index_label='Subject')
+        zmaxdfT.join(groupinfo).to_csv(outname + '_zmax.csv', 
+                                        sep='\t', index=True, index_label='Subject')
+        zmaxdfT = zmaxdfT.join(status)
         zmax_grp = zmaxdfT.groupby(by='Status')
    
     if not copemeandf.empty:
         copemeandfT = pd.DataFrame(copemeandf.T, columns=col_names)
-        copemeandfT.insert(0, 'Status', groupinfo)
-        copemeandfT.to_csv(outname + '_copemean.csv', sep='\t', index=True, index_label='Subject')
+        copemeandfT.join(groupinfo).to_csv(outname + '_copemean.csv', 
+                                            sep='\t', index=True, index_label='Subject')
+        copemeandfT = copemeandfT.join(status)
         copemean_grp = copemeandfT.groupby(by='Status')
      
     if not copemaxdf.empty:    
         copemaxdfT = pd.DataFrame(copemaxdf.T, columns=col_names)
-        copemaxdfT.insert(0, 'Status', groupinfo)
-        copemaxdfT.to_csv(outname + '_copemax.csv', sep='\t', index=True, index_label='Subject')
+        copemaxdfT.join(groupinfo).to_csv(outname + '_copemax.csv', 
+                                        sep='\t', index=True, index_label='Subject')
+        copemaxdfT = copemaxdfT.join(status)
         copemax_grp = copemaxdfT.groupby(by='Status')
 
         
