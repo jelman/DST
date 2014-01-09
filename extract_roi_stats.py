@@ -24,7 +24,7 @@ def plot_line(df, xticklabels, outfile, title=None):
     ax.set_xticks(range(len(xticklabels)))
     ax.set_xticklabels(xticklabels)
     plt.tight_layout()
-    plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
+    plt.legend(loc='best', prop={'size':12}, fancybox=True).get_frame().set_alpha(0.7)
     plt.savefig(outfile)
     
     
@@ -34,8 +34,9 @@ def plot_pyplot_bar(df, error, outfile, title=None):
     #sns.set(style="darkgrid", context="poster")
     sns.set(style="ticks", context="poster")
     N = len(df)
-    ind = np.arange(N)  
     width = 0.25
+    ind = np.arange(N) + width/2
+
     groups = len(df.ix[0])
     for group in range(groups):
         groupind = ind + (group * width)
@@ -50,10 +51,11 @@ def plot_pyplot_bar(df, error, outfile, title=None):
     ax.set_xticklabels(df.index)
     if title:
         ax.set_title(title)
-    ax.legend(col_labels,loc='best')
+    plt.tight_layout()
+    handles, labels = ax.get_legend_handles_labels()
+    lgd = ax.legend(handles, labels, loc='best', prop={'size':12}, fancybox=True).get_frame().set_alpha(0.7)
     ax.axhline(color='black', linestyle='--')
     sns.despine()
-    plt.tight_layout()
     plt.savefig(outfile)    
    
 def plot_pandas_bar(df, error, outfile, title=None):
@@ -132,8 +134,7 @@ if __name__ == '__main__':
         statdf_grp = statdf_groupinfo.groupby(by='Group')
         plot_line(statdf_grp.mean()[plotcols].T, 
                     col_labels, 
-                    plt_outfile,
-                    mask_name)
+                    plt_outfile)
     else:
         column_mapper = {}
         for i in range(len(plotcols)):
@@ -142,5 +143,4 @@ if __name__ == '__main__':
         statdf_grp = statdf_groupinfo.groupby(by='Group')
         plot_pyplot_bar(statdf_grp.mean()[col_labels], 
                         statdf_grp.std()[col_labels], 
-                        plt_outfile, 
-                        mask_name)        
+                        plt_outfile)        
