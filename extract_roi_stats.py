@@ -17,7 +17,7 @@ def fslstats(infile, mask):
     cout = stats.run()
     return cout.outputs.out_stat
 
-def plot_line(df, title, xticklabels, outfile):
+def plot_line(df, xticklabels, outfile, title=None):
     sns.set(style="darkgrid", context="poster")
     ax = df.plot(title=title, marker='o')
     ax.set_ylabel('Z Score')
@@ -27,9 +27,40 @@ def plot_line(df, title, xticklabels, outfile):
     plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
     plt.savefig(outfile)
     
-def plot_bar(df, title, outfile):
+    
+def plot_pyplot_bar(df, error, outfile, title=None):    
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    #sns.set(style="darkgrid", context="poster")
+    sns.set(style="ticks", context="poster")
+    N = len(df)
+    ind = np.arange(N)  
+    width = 0.25
+    groups = len(df.ix[0])
+    for group in range(groups):
+        groupind = ind + (group * width)
+        rects = ax.bar(groupind, df.iloc[:,group], width,
+                    color=sns.color_palette()[group], 
+                    label=col_labels[group],
+                    yerr=error.iloc[:,group],
+                    error_kw=dict(capsize=5))
+    ax.set_ylabel('Z Score')
+    ax.set_xlabel('Group')
+    ax.set_xticks(ind+width)
+    ax.set_xticklabels(df.index)
+    if title:
+        ax.set_title(title)
+    ax.legend(col_labels,loc='best')
+    ax.axhline(color='black', linestyle='--')
+    sns.despine()
+    plt.tight_layout()
+    plt.savefig(outfile)    
+   
+def plot_pandas_bar(df, error, outfile, title=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
     sns.set(style="darkgrid", context="poster")
-    ax = df.plot(kind='bar', sort_columns=False, title=title)
+    df.plot(kind='bar', ax=ax, sort_columns=False)
     ax.set_ylabel('Z Score')
     plt.tight_layout()
     # Shink current axis by 20%
@@ -43,14 +74,14 @@ def plot_bar(df, title, outfile):
 if __name__ == '__main__':
 
     ###################### Set inputs ##################################
-    sublist_file = '/home/jagust/DST/FSL/spreadsheets/AGE_Effect_Subs.txt' #List of subjects
-    mask = '/home/jagust/DST/FSL/masks/Gist/TaskPos_AGE_Tmap2.nii.gz' #ROI mask
+    sublist_file = '/home/jagust/DST/FSL/spreadsheets/PIB_Effect_Subs.txt' #List of subjects
+    mask = '/home/jagust/DST/FSL/masks/Gist/TaskPos_PIB_Tmap2.nii.gz' #ROI mask
     statlist = ['zstat1', 'zstat2', 'zstat5'] #Stats to extract
     groupinfo_file = '/home/jagust/DST/FSL/spreadsheets/Included_Subject_Covariates.csv' #File listing group status
     infile_pattern = '/home/jagust/DST/FSL/functional/2ndLevel/Gist_ST/%s.gfeat/cope1.feat/stats/%s.nii.gz'
     outfile_pattern = '/home/jagust/DST/FSL/results/Gist/%s.csv'
     #Specifiy plot info below if desired
-    plot_fig = 'line' #Specify type of figure ('bar' or 'line')
+    plot_fig = 'bar' #Specify type of figure ('bar' or 'line')
     plotcols = statlist
     col_labels = ['Hi Hit','Miss','Hi Hit>Miss']
     plt_outfile_pattern = '/home/jagust/DST/FSL/results/Gist/%s.png'
@@ -97,11 +128,19 @@ if __name__ == '__main__':
     
     #Plot and save figure
     if plot_fig == 'line': 
+        column_mapper = {}
         statdf_grp = statdf_groupinfo.groupby(by='Group')
-        plot_line(statdf_grp.mean()[plotcols].T, mask_name, col_labels, plt_outfile)
+        plot_line(statdf_grp.mean()[plotcols].T, 
+                    col_labels, 
+                    plt_outfile,
+                    mask_name)
     else:
+        column_mapper = {}
         for i in range(len(plotcols)):
             column_mapper[plotcols[i]] = col_labels[i]
         statdf_groupinfo = statdf_groupinfo.rename(columns=column_mapper)
         statdf_grp = statdf_groupinfo.groupby(by='Group')
-        plot_bar(statdf_grp.mean()[col_labels], mask_name, plt_outfile)        
+        plot_pyplot_bar(statdf_grp.mean()[col_labels], 
+                        statdf_grp.std()[col_labels], 
+                        plt_outfile, 
+                        mask_name)        
