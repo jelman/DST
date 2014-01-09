@@ -6,6 +6,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import general_utilities as gu
 
+def extract_second_level(statlist, sublist, infile_pattern, mask):
+    statdict = {}
+    for stat in statlist:
+        statdict[stat] = {}
+        for subj in sublist:
+            stat_infile = infile_pattern%(subj,stat)
+            subjstat = fslstats(stat_infile, mask)
+            statdict[stat][subj] = subjstat
+    statdf = pd.DataFrame.from_dict(statdict)
+    return statdf
+    
+    
 def fslstats(infile, mask):
     """
     Wrapper for fslstats. Takes input file and extract mean from specified ROI mask
@@ -36,7 +48,6 @@ def plot_pyplot_bar(df, error, outfile, title=None):
     N = len(df)
     width = 0.25
     ind = np.arange(N) + width/2
-
     groups = len(df.ix[0])
     for group in range(groups):
         groupind = ind + (group * width)
@@ -78,9 +89,10 @@ if __name__ == '__main__':
     ###################### Set inputs ##################################
     sublist_file = '/home/jagust/DST/FSL/spreadsheets/PIB_Effect_Subs.txt' #List of subjects
     mask = '/home/jagust/DST/FSL/masks/Gist/TaskPos_PIB_Tmap2.nii.gz' #ROI mask
-    statlist = ['zstat1', 'zstat2', 'zstat5'] #Stats to extract
+    statlist = ['zstat1', 'zstat2', 'zstat6'] #Stats to extract
     groupinfo_file = '/home/jagust/DST/FSL/spreadsheets/Included_Subject_Covariates.csv' #File listing group status
     infile_pattern = '/home/jagust/DST/FSL/functional/2ndLevel/Gist_ST/%s.gfeat/cope1.feat/stats/%s.nii.gz'
+    stat_level = 2
     outfile_pattern = '/home/jagust/DST/FSL/results/Gist/%s.csv'
     #Specifiy plot info below if desired
     plot_fig = 'bar' #Specify type of figure ('bar' or 'line')
@@ -98,19 +110,18 @@ if __name__ == '__main__':
     
     #Set output file names
     pth, mask_name, ext = gu.split_filename(mask)
-    outfile = outfile_pattern%(mask_name)
+    outfile = outfile_pattern%(mask_name)       
     if plot_fig:
         plt_outfile = plt_outfile_pattern%(mask_name)
     #Extract stats from functional data  
-    statdict = {}
-    for stat in statlist:
-        statdict[stat] = {}
-        for subj in sublist:
-            stat_infile = infile_pattern%(subj,stat)
-            subjstat = fslstats(stat_infile, mask)
-            statdict[stat][subj] = subjstat
-    statdf = pd.DataFrame.from_dict(statdict)
-    statdf = statdf.reindex(columns=statlist) #re-order columns to match statlist above
+    if not (stat_level == 1 or stat_level == 2):
+        print  "Level to extract values from not specified"
+    elif stat_level == 2:   
+        statdf = extract_second_level(statlist, sublist, infile_pattern, mask)
+        statdf = statdf.reindex(columns=statlist) #re-order columns to match statlist above
+    #else stat_level == 1:
+    
+        
     
     #Extract GM values
     gmdict = {}
