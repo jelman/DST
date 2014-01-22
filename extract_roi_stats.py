@@ -106,13 +106,13 @@ def fslstats(infile, mask):
 def plot_line(df, xticklabels, outfile, title=None):
     sns.set(style="ticks", context="poster")
     ax = df.plot(title=title, marker='o')
-    ax.set_ylabel('Z Score')
+    ax.set_ylabel('Z Score', fontweight='bold')
     ax.set_xticks(range(len(xticklabels)))
     ax.set_xticklabels(xticklabels)
     plt.tight_layout()
     plt.legend(loc='best', prop={'size':12}, fancybox=True).get_frame().set_alpha(0.7)
     sns.despine()
-    plt.savefig(outfile)
+    plt.savefig(outfile, dpi=300)
     
 def plot_scatter(df, x, y, xticklabels, outfile, title=None):
     sns.set(style="ticks", context="poster")
@@ -121,12 +121,12 @@ def plot_scatter(df, x, y, xticklabels, outfile, title=None):
                 scatter_kws=dict(marker='o'))
 
     plt.xticks(arange(7), xticklabels)
-    plt.xlabel(x, fontweight='bold')
+    plt.xlabel(x, fontweight='bold', labelpad=15)
     plt.ylabel(y, fontweight='bold')
     plt.tight_layout()
     plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
     sns.despine()   
-    plt.savefig(outfile) 
+    plt.savefig(outfile, dpi=300) 
     
 def plot_pyplot_bar(df, error, outfile, title=None):    
     fig = plt.figure()
@@ -144,8 +144,8 @@ def plot_pyplot_bar(df, error, outfile, title=None):
                     label=col_labels[group],
                     yerr=error.iloc[:,group],
                     error_kw=dict(capsize=5))
-    ax.set_ylabel('Z Score')
-    ax.set_xlabel('Group')
+    ax.set_ylabel('Z Score', fontweight='bold')
+    ax.set_xlabel('Group', fontweight='bold', labelpad=15)
     ax.set_xticks(ind+width)
     ax.set_xticklabels(df.index)
     if title:
@@ -162,7 +162,8 @@ def plot_pandas_bar(df, error, outfile, title=None):
     ax = fig.add_subplot(1,1,1)
     sns.set(style="darkgrid", context="poster")
     df.plot(kind='bar', ax=ax, sort_columns=False)
-    ax.set_ylabel('Z Score')
+    plt.xlabel(ax.get_xlabel(), fontweight='bold', labelpad=15)
+    ax.set_ylabel('Z Score', fontweight='bold')
     plt.tight_layout()
     # Shink current axis by 20%
     box = ax.get_position()
