@@ -104,7 +104,7 @@ def fslstats(infile, mask):
     return cout.outputs.out_stat
 
 def plot_line(df, xticklabels, outfile, title=None):
-    sns.set(style="ticks", context="poster")
+    sns.set(style="ticks", context="poster", palette='Set1')
     ax = df.plot(title=title, marker='o')
     ax.set_ylabel('Z Score', fontweight='bold')
     ax.set_xticks(range(len(xticklabels)))
@@ -114,15 +114,16 @@ def plot_line(df, xticklabels, outfile, title=None):
     sns.despine()
     plt.savefig(outfile, dpi=300)
     
-def plot_scatter(df, x, y, xticklabels, outfile, title=None):
-    sns.set(style="ticks", context="poster")
+def plot_scatter(df, x, y, xticklabels, outfile, title=None, palette=None):
+    sns.set(style="ticks", context="talk", palette='Set1')
     sns.lmplot(x, y, df, color='Group', 
-                palette="muted", x_jitter=.15, x_partial=['Age','GM'], 
-                scatter_kws=dict(marker='o'))
+                x_jitter=.15, x_partial=['Age','GM'], ci=None,
+                palette=palette,scatter_kws=dict(marker='o'))
 
-    plt.xticks(arange(7), xticklabels)
+    plt.xticks(np.arange(7), xticklabels)
     plt.xlabel(x, fontweight='bold', labelpad=15)
     plt.ylabel(y, fontweight='bold')
+    plt.tick_params(direction='out', width=1)
     plt.tight_layout()
     plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
     sns.despine()   
@@ -132,7 +133,7 @@ def plot_pyplot_bar(df, error, outfile, title=None):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     #sns.set(style="darkgrid", context="poster")
-    sns.set(style="ticks", context="poster")
+    sns.set(style="ticks", context="poster", palette='Set1')
     N = len(df)
     width = 0.25
     ind = np.arange(N) + width/2
@@ -160,7 +161,7 @@ def plot_pyplot_bar(df, error, outfile, title=None):
 def plot_pandas_bar(df, error, outfile, title=None):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-    sns.set(style="darkgrid", context="poster")
+    sns.set(style="darkgrid", context="poster", palette='Set1')
     df.plot(kind='bar', ax=ax, sort_columns=False)
     plt.xlabel(ax.get_xlabel(), fontweight='bold', labelpad=15)
     ax.set_ylabel('Z Score', fontweight='bold')
@@ -176,17 +177,19 @@ def plot_pandas_bar(df, error, outfile, title=None):
 if __name__ == '__main__':
 
     ###################### Set inputs ##################################
-    sublist_file = '/home/jagust/DST/FSL/spreadsheets/AllSubs.txt' #List of subjects
-    mask = '/home/jagust/DST/FSL/masks/Left_Hippo_maxprob25.nii.gz' #ROI mask
-    statlist = ['zstat1', 'zstat2', 'zstat3', 'zstat4', 'zstat5'] #Stats to extract
+    sublist_file = '/home/jagust/DST/FSL/spreadsheets/PIB_Effect_Subs.txt' #List of subjects
+    mask = '/home/jagust/DST/FSL/masks/Details/Details_PIB_TaskPos.nii.gz' #ROI mask
+    statlist = ['zstat1', 'zstat2','zstat3', 'zstat4', 'zstat5'] #Stats to extract
     groupinfo_file = '/home/jagust/DST/FSL/spreadsheets/Included_Subject_Covariates.csv' #File listing group status
     infile_pattern = '/home/jagust/DST/FSL/functional/2ndLevel/Details_ST/%s.gfeat/cope1.feat/stats/%s.nii.gz'
     stat_level = 2
     outfile_pattern = '/home/jagust/DST/FSL/results/Details/%s.csv'
     #Specifiy plot info below if desired
-    plot_fig = 'line' #Specify type of figure ('bar' or 'line')
+    plot_fig = 'scatter' #Specify type of figure ('bar' or 'line')
+    custom_palette = sns.color_palette(["#e41a1c","#377eb8"]) 
+    #ex. colors:  "#e41a1c"=red, "#377eb8"=blue, "#4daf4a"=green
     plotcols = statlist
-    col_labels = ['Detail1', 'Detail2', 'Detail3', 'Detail4', 'Detail5']
+    col_labels = ['1', '2', '3', '4', '5']
     plt_outfile_pattern = '/home/jagust/DST/FSL/results/Details/%s.png'
     #Specify info to extract GM values
     gm_pattern = '/home/jagust/DST/FSL/functional/%s/run02/Detail_ST.feat/reg/highresGMs2standard.nii.gz'   
@@ -230,7 +233,7 @@ if __name__ == '__main__':
         plot_line(statdf_grp.mean()[plotcols].T, 
                     col_labels, 
                     plt_outfile)
-    elif:
+    elif plot_fig == 'scatter':
         longdf = pd.melt(statdf_groupinfo, id_vars=['Subject','Group','PIB_Index', 'Age', 'GM'], 
                     value_vars=statlist, 
                     var_name='Detail Level', 
@@ -239,7 +242,8 @@ if __name__ == '__main__':
         ticklabels = range(1,len(statlist)+1)
         ticklabels.insert(0,'')
         ticklabels.append('')   
-        plot_scatter(longdf, 'Detail Level', 'Z score', ticklabels, outfile, title=None)           
+        plot_scatter(longdf, 'Detail Level', 'Z score', ticklabels, 
+                    plt_outfile, palette=custom_palette,title=None)           
                
     else:
         column_mapper = {}
