@@ -118,14 +118,16 @@ def plot_scatter(df, x, y, xticklabels, outfile, title=None, palette=None):
     sns.set(style="ticks", context="talk", palette='Set1')
     sns.lmplot(x, y, df, color='Group', 
                 x_jitter=.15, x_partial=['Age','GM'], ci=None,
-                palette=palette,scatter_kws=dict(marker='o'))
-
-    plt.xticks(np.arange(7), xticklabels)
-    plt.xlabel(x, fontweight='bold', labelpad=15)
-    plt.ylabel(y, fontweight='bold')
+                palette=palette,scatter_kws=dict(marker='o'),
+                line_kws=dict(linewidth=2))
+    plt.xticks(np.arange(7), xticklabels, size=18)
+    plt.xlabel(x, fontsize=24, labelpad=15)
+    plt.ylabel(y, fontsize=24)
     plt.tick_params(direction='out', width=1)
     plt.tight_layout()
-    plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
+    #plt.legend(loc='best', fancybox=True).get_frame().set_alpha(0.7)
+    plt.subplots_adjust(top=0.92)
+    lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=2, prop={'size':20})
     sns.despine()   
     plt.savefig(outfile, dpi=300) 
     
@@ -177,8 +179,8 @@ def plot_pandas_bar(df, error, outfile, title=None):
 if __name__ == '__main__':
 
     ###################### Set inputs ##################################
-    sublist_file = '/home/jagust/DST/FSL/spreadsheets/PIB_Effect_Subs.txt' #List of subjects
-    mask = '/home/jagust/DST/FSL/masks/Details/Details_PIB_TaskPos.nii.gz' #ROI mask
+    sublist_file = '/home/jagust/DST/FSL/spreadsheets/AGE_Effect_Subs.txt' #List of subjects
+    mask = '/home/jagust/DST/FSL/masks/Details/Details_AGE_TaskPos.nii.gz' #ROI mask
     statlist = ['zstat1', 'zstat2','zstat3', 'zstat4', 'zstat5'] #Stats to extract
     groupinfo_file = '/home/jagust/DST/FSL/spreadsheets/Included_Subject_Covariates.csv' #File listing group status
     infile_pattern = '/home/jagust/DST/FSL/functional/2ndLevel/Details_ST/%s.gfeat/cope1.feat/stats/%s.nii.gz'
@@ -186,11 +188,11 @@ if __name__ == '__main__':
     outfile_pattern = '/home/jagust/DST/FSL/results/Details/%s.csv'
     #Specifiy plot info below if desired
     plot_fig = 'scatter' #Specify type of figure ('bar' or 'line')
-    custom_palette = sns.color_palette(["#e41a1c","#377eb8"]) 
+    custom_palette = sns.color_palette(["#377eb8","#4daf4a"]) 
     #ex. colors:  "#e41a1c"=red, "#377eb8"=blue, "#4daf4a"=green
     plotcols = statlist
     col_labels = ['1', '2', '3', '4', '5']
-    plt_outfile_pattern = '/home/jagust/DST/FSL/results/Details/%s.png'
+    plt_outfile_pattern = '/home/jagust/DST/FSL/results/Details/%s.svg'
     #Specify info to extract GM values
     gm_pattern = '/home/jagust/DST/FSL/functional/%s/run02/Detail_ST.feat/reg/highresGMs2standard.nii.gz'   
     ####################################################################
@@ -198,7 +200,7 @@ if __name__ == '__main__':
     #Load subject list and group info file
     with open(sublist_file,'r+') as f:
         sublist = f.read().splitlines()        
-    groupinfo = pd.read_csv(groupinfo_file, sep=None)  
+    groupinfo = pd.read_csv(groupinfo_file, sep=',')  
     
     #Set output file names
     pth, mask_name, ext = gu.split_filename(mask)
@@ -239,6 +241,7 @@ if __name__ == '__main__':
                     var_name='Detail Level', 
                     value_name='Z score')
         longdf['Detail Level'] = longdf['Detail Level'].str.replace('zstat','').astype('int')
+        longdf['Age'] = longdf['Age'].astype('float')
         ticklabels = range(1,len(statlist)+1)
         ticklabels.insert(0,'')
         ticklabels.append('')   
