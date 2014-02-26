@@ -30,14 +30,14 @@ if __name__ == '__main__':
     #Set Behavioral and functional data paths
     behavdatapath = '/home/jagust/DST/BehavioralData'
     subjectlist = '/home/jagust/DST/Scanned_Subjects.csv'
-    cols = ['Subject','Group','NewCode','OldNew','GistSlide.ACC','DetailSlide.ACC','Confidence']
-    file_suffix = '_RetrievalPerformance.csv'
+    cols = ['Subject','Group','NewCode','OldNew','GistSlide.ACC','DetailSlide.ACC','Confidence','RT']
+    file_suffix = '_RetrievalPerformanceRT.csv'
     ###################################################
-#Load list of subjects. Split into old and young subject lists.
+    #Load list of subjects. Split into old and young subject lists.
     allsubs = pandas.read_csv(subjectlist, sep=None)
     youngsubs = allsubs['Subject'][allsubs['Group']=='Young']
     oldsubs = allsubs['Subject'][allsubs['Group']=='Old']
-#Load in young subject to dataframe.
+    #Load in young subject to dataframe.
     youngdat = pandas.DataFrame()
     for subj in youngsubs:
         filename = subj + file_suffix
