@@ -44,6 +44,21 @@ def CombineRegressors(mc_params, outlier_array):
 
 if __name__ == '__main__':
 
+    """
+    Script to run rapid_art data QC from nipype. 
+    
+    Inputs:
+    --------
+    funcdatapath : Path to directory containing subject folders
+    art_output : File to output list of outlier volumns
+    rundir : Directory of each fMRI session
+    infiles : Functional data file 
+    param_file : FIle containing motion correction parameters
+    param_source : 'FSL' or 'SPM' motion correction used to produce parameters?
+    thresh : Threshold to determine motion and intensity outliers
+    outdir : directory to output QA files
+    
+    """
     if len(sys.argv) ==1:
         print 'USAGE: python run_image_qa.py Bxx-xxx Bxx-xxx Bxx-xxx'
     else:
@@ -67,19 +82,22 @@ if __name__ == '__main__':
             thresh = 3
             outdir = rundir
             ######################################################
-            #Run artdetect and create QA directory
-            rapid_art.main(infiles, param_file, param_source, thresh, outdir)
+            if not rundir:
+                continue
+            else:
+                #Run artdetect and create QA directory
+                rapid_art.main(infiles, param_file, param_source, thresh, outdir)
 
-            #Generate motion-intensity regressor for FSL and save in QA folder.
-            #Combine motion-intensity regressors with motion correction parameters. 
-            #Save combined confound regressors to run directory.
-            mc_params = np.loadtxt(param_file)
-            num_vols = len(mc_params)
-            exists, outlier_array = CreateRegressors(outdir, art_output, num_vols)
-            if exists:
-                confound_regressors = CombineRegressors(mc_params, outlier_array) 
-            elif not exists:
-                outfile = os.path.join(rundir, 'confound_regressors.txt') 
-                np.savetxt(outfile, mc_params, delimiter=u'\t')
-                print 'Saved %s'%outfile
-            
+                #Generate motion-intensity regressor for FSL and save in QA folder.
+                #Combine motion-intensity regressors with motion correction parameters. 
+                #Save combined confound regressors to run directory.
+                mc_params = np.loadtxt(param_file)
+                num_vols = len(mc_params)
+                exists, outlier_array = CreateRegressors(outdir, art_output, num_vols)
+                if exists:
+                    confound_regressors = CombineRegressors(mc_params, outlier_array) 
+                elif not exists:
+                    outfile = os.path.join(rundir, 'confound_regressors.txt') 
+                    np.savetxt(outfile, mc_params, delimiter=u'\t')
+                    print 'Saved %s'%outfile
+                
